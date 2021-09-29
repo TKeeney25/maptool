@@ -174,6 +174,7 @@ public class Token extends BaseModel implements Cloneable {
     setScaleXY,
     setNotes,
     setGMNotes,
+    setCurrentZone,
     saveMacro,
     saveMacroList,
     deleteMacro,
@@ -330,6 +331,8 @@ public class Token extends BaseModel implements Cloneable {
 
   private String gmName;
 
+  private Zone currentZone;
+
   /**
    * A state properties for this token. This allows state to be added that can change appearance of
    * the token.
@@ -355,6 +358,7 @@ public class Token extends BaseModel implements Cloneable {
   private HeroLabData heroLabData;
 
   private boolean allowURIAccess = false;
+
 
   /**
    * Constructor from another token, with the option to keep the token id
@@ -414,6 +418,8 @@ public class Token extends BaseModel implements Cloneable {
     gmName = token.gmName;
     gmNotes = token.gmNotes;
     label = token.label;
+
+    currentZone = token.currentZone;
 
     isFlippedX = token.isFlippedX;
     isFlippedY = token.isFlippedY;
@@ -646,6 +652,48 @@ public class Token extends BaseModel implements Cloneable {
   public void setGMName(String name) {
     gmName = name;
   }
+
+  public String getCurrentZone() {
+    if (currentZone != null) {
+      return currentZone.getName();
+    } else {
+      return "";
+    }
+  }
+
+  public void setCurrentZone(Zone currentZone) {
+    this.currentZone = currentZone;
+  }
+
+  public int getHeightFromCurrentZone(Zone compareZone) {
+    int height = 0;
+    Zone compareZoneBelow = compareZone;
+    while (compareZoneBelow != null && compareZoneBelow != currentZone) {
+      compareZoneBelow = compareZoneBelow.getZoneBelow();
+      height -= 1;
+    }
+    if (compareZoneBelow != null) {return height;}
+
+    height = 0;
+    Zone compareZoneAbove = compareZone;
+    while (compareZoneAbove != null && compareZoneAbove != currentZone) {
+      compareZoneAbove = compareZoneAbove.getZoneAbove();
+      height += 1;
+    }
+    if (compareZoneAbove != null) {return height;}
+    return 0;
+  }
+
+  public float zoneOpacity(Zone viewedZone) {
+    float opacity = getTokenOpacity();
+    float height = Math.abs(getHeightFromCurrentZone(viewedZone));
+    opacity /= (2.0f * height);
+    if (opacity < 0.2f) {
+      opacity = 0.2f;
+    }
+    return opacity;
+  }
+
 
   public boolean hasHalo() {
     return haloColorValue != null;
@@ -2614,6 +2662,8 @@ public class Token extends BaseModel implements Cloneable {
       case setGMNotes:
         setGMNotes(parameters[0].toString());
         break;
+      case setCurrentZone:
+        setCurrentZone(Zone.findZone(parameters[0].toString()));
       case setX:
         if (hasLightSources()) {
           lightChanged = true;

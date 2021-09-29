@@ -55,6 +55,7 @@ import net.rptools.maptool.client.ui.htmlframe.HTMLFrameFactory;
 import net.rptools.maptool.client.ui.token.AbstractTokenOverlay;
 import net.rptools.maptool.client.ui.token.BarTokenOverlay;
 import net.rptools.maptool.client.ui.token.NewTokenDialog;
+import net.rptools.maptool.client.ui.token.StringTokenOverlay;
 import net.rptools.maptool.client.walker.ZoneWalker;
 import net.rptools.maptool.language.I18N;
 import net.rptools.maptool.model.*;
@@ -3257,8 +3258,9 @@ public class ZoneRenderer extends JComponent
       }
 
       // Calculate alpha Transparency from token and use opacity for indicating that token is moving
-      float opacity = token.getTokenOpacity();
+      float opacity = token.zoneOpacity(zone);
       if (isTokenMoving(token)) opacity = opacity / 2.0f;
+
 
       // Finally render the token image
       timer.start("tokenlist-7");
@@ -3466,6 +3468,10 @@ public class ZoneRenderer extends JComponent
         }
         overlay.paintOverlay(locg, token, bounds, stateValue);
       }
+
+      StringTokenOverlay stroverlay = new StringTokenOverlay("ZoneHeight", Color.BLUE, 5,  Integer.toString(token.getHeightFromCurrentZone(zone)));
+      stroverlay.paintOverlay(locg, token, bounds);
+
       timer.stop("tokenlist-9");
 
       timer.start("tokenlist-10");

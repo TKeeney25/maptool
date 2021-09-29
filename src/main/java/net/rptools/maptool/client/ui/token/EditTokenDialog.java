@@ -221,6 +221,9 @@ public class EditTokenDialog extends AbeillePanel<Token> {
     // Image Tables
     updateImageTableCombo();
 
+    // ZONE
+    updateCurrentZoneCombo();
+
     // STATES
     Component barPanel = null;
     updateStatesPanel();
@@ -294,6 +297,7 @@ public class EditTokenDialog extends AbeillePanel<Token> {
     getPortraitPanel().setImageId(token.getPortraitImage());
     getTokenLayoutPanel().setToken(token);
     getImageTableCombo().setSelectedItem(token.getImageTableName());
+    getCurrentZoneCombo().setSelectedItem(token.getCurrentZone());
     getTokenOpacitySlider()
         .setValue(new BigDecimal(token.getTokenOpacity()).multiply(new BigDecimal(100)).intValue());
     getTerrainModifier().setText(Double.toString(token.getTerrainModifier()));
@@ -545,6 +549,16 @@ public class EditTokenDialog extends AbeillePanel<Token> {
     getImageTableCombo().setModel(model);
   }
 
+  private void updateCurrentZoneCombo() {
+    List<String> zoneNameList = new ArrayList<>();
+    for (Zone zone:MapTool.getCampaign().getZones()) {
+      zoneNameList.add(zone.getName());
+    }
+    Collections.sort(zoneNameList);
+    DefaultComboBoxModel model = new DefaultComboBoxModel(zoneNameList.toArray());
+    getCurrentZoneCombo().setModel(model);
+  }
+
   /**
    * Updates the property table.
    *
@@ -590,6 +604,10 @@ public class EditTokenDialog extends AbeillePanel<Token> {
 
   public JComboBox getImageTableCombo() {
     return (JComboBox) getComponent("imageTableCombo");
+  }
+
+  public JComboBox getCurrentZoneCombo() {
+    return (JComboBox) getComponent("currentZoneCombo");
   }
 
   public void initTokenOpacitySlider() {
@@ -666,7 +684,7 @@ public class EditTokenDialog extends AbeillePanel<Token> {
         new BigDecimal(getTokenOpacitySlider().getValue())
             .divide(new BigDecimal(100))
             .floatValue());
-
+    token.setCurrentZone(Zone.findZone((String) getCurrentZoneCombo().getSelectedItem())); //Must go after setTokenOpacity
     try {
       token.setTerrainModifier(Double.parseDouble(getTerrainModifier().getText()));
     } catch (NumberFormatException e) {

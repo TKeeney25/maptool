@@ -231,6 +231,9 @@ public class Zone extends BaseModel {
   private String playerAlias;
   private boolean isVisible;
 
+  private Zone zoneAbove;
+  private Zone zoneBelow;
+
   /** The VisionType of the zone. OFF, DAY or NIGHT. */
   private VisionType visionType = VisionType.OFF;
 
@@ -319,6 +322,28 @@ public class Zone extends BaseModel {
     return playerAlias == null ? name : playerAlias;
   }
 
+  public String getMapAbove() {
+    if (zoneAbove == null) {
+      return "";
+    }
+    return zoneAbove.name;
+  }
+
+  public Zone getZoneAbove() {
+    return zoneAbove;
+  }
+
+  public String getMapBelow() {
+    if (zoneBelow == null) {
+      return "";
+    }
+    return zoneBelow.name;
+  }
+
+  public Zone getZoneBelow() {
+    return zoneBelow;
+  }
+
   public void setName(String name) {
     this.name = name;
   }
@@ -333,6 +358,32 @@ public class Zone extends BaseModel {
     }
     this.playerAlias = playerAlias.equals("") || playerAlias.equals(name) ? null : playerAlias;
     return true;
+  }
+
+  static public Zone findZone(String zone) {
+    List<Zone> zoneList = new LinkedList<>(MapTool.getCampaign().getZones());
+    for (Zone z : zoneList) {
+      if (z.name.equals(zone)) {
+       return z;
+      }
+    }
+    return null;
+  }
+
+  public void setMapAbove(String mapAbove) {
+    Zone zone = findZone(mapAbove);
+    this.zoneAbove = zone;
+    if (zone != null) {
+      zone.zoneBelow = this;
+    }
+  }
+
+  public void setMapBelow(String mapBelow) {
+    Zone zone = findZone(mapBelow);
+    this.zoneBelow = zone;
+    if (zone != null) {
+      zone.zoneAbove = this;
+    }
   }
 
   public MD5Key getMapAssetId() {
@@ -477,6 +528,8 @@ public class Zone extends BaseModel {
     topologyMode = zone.topologyMode;
     isVisible = zone.isVisible;
     hasFog = zone.hasFog;
+    zoneAbove = zone.zoneAbove;
+    zoneBelow = zone.zoneBelow;
   }
 
   public GUID getId() {
@@ -1086,20 +1139,20 @@ public class Zone extends BaseModel {
   public Area getExposedArea(PlayerView view) {
     Area combined = new Area(exposedArea);
 
-    List<Token> toks = view.getTokens();
+    List<Token> tokens = view.getTokens();
     // Don't need to worry about StrictTokenOwnership since the PlayerView only contains tokens we
     // own by calling
     // AppUtil.playerOwns()
-    if (toks == null || toks.isEmpty()) {
+    if (tokens == null || tokens.isEmpty()) {
       return combined;
     }
-    for (Token tok : toks) {
+    for (Token token : tokens) {
       // Don't need this IF statement; see
       // net.rptools.maptool.client.ui.zone.ZoneRenderer.getPlayerView(Role)
-      // if (!tok.getHasSight() || !AppUtil.playerOwns(tok)) {
+      // if (!token.getHasSight() || !AppUtil.playerOwns(token)) {
       // continue;
       // }
-      ExposedAreaMetaData meta = exposedAreaMeta.get(tok.getExposedAreaGUID());
+      ExposedAreaMetaData meta = exposedAreaMeta.get(token.getExposedAreaGUID());
       if (meta != null) {
         combined.add(meta.getExposedAreaHistory());
       }
@@ -1349,6 +1402,7 @@ public class Zone extends BaseModel {
 
     tokenMap.put(token.getId(), token);
 
+
     // LATER: optimize this
     tokenOrderedList.remove(token);
     tokenOrderedList.add(token);
@@ -1356,6 +1410,12 @@ public class Zone extends BaseModel {
 
     if (newToken) {
       fireModelChangeEvent(new ModelChangeEvent(this, Event.TOKEN_ADDED, token));
+      if (zoneAbove != null) {
+        zoneAbove.putToken(token);
+      }
+      if (zoneBelow != null) {
+        zoneBelow.putToken(token);
+      }
     } else {
       fireModelChangeEvent(new ModelChangeEvent(this, Event.TOKEN_CHANGED, token));
     }
@@ -1416,6 +1476,12 @@ public class Zone extends BaseModel {
   public void removeToken(GUID id) {
     Token token = tokenMap.remove(id);
     if (token != null) {
+      if (zoneAbove != null) {
+        zoneAbove.removeToken(id);
+      }
+      if (zoneBelow != null) {
+        zoneBelow.removeToken(id);
+      }
       tokenOrderedList.remove(token);
       fireModelChangeEvent(new ModelChangeEvent(this, Event.TOKEN_REMOVED, token));
     }
@@ -1437,6 +1503,12 @@ public class Zone extends BaseModel {
         }
       }
       if (!removedTokens.isEmpty()) {
+        if (zoneAbove != null) {
+          zoneAbove.removeTokens(ids);
+        }
+        if (zoneBelow != null) {
+          zoneBelow.removeTokens(ids);
+        }
         fireModelChangeEvent(new ModelChangeEvent(this, Event.TOKEN_REMOVED, removedTokens));
       }
     }

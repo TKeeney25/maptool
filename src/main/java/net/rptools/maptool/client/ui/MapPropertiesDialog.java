@@ -258,6 +258,8 @@ public class MapPropertiesDialog extends JDialog {
   private void copyZoneToUI() {
     getNameTextField().setText(zone.getName());
     getPlayerAliasTextField().setText(zone.getPlayerAlias());
+    getMapAboveTextField().setText(zone.getMapAbove());
+    getMapBelowTextField().setText(zone.getMapBelow());
     // Localizes units per cell, using the proper separator. Fixes #507.
     getDistanceTextField().setText(StringUtil.formatDecimal(zone.getUnitsPerCell(), 1));
     getPixelsPerCellTextField().setText(Integer.toString(zone.getGrid().getSize()));
@@ -283,6 +285,8 @@ public class MapPropertiesDialog extends JDialog {
     zone.setUnitsPerCell(
         StringUtil.parseDecimal(getDistanceTextField().getText(), zone.getUnitsPerCell()));
     zone.setPlayerAlias(getPlayerAliasTextField().getText().trim());
+    zone.setMapAbove(getMapAboveTextField().getText().trim());
+    zone.setMapBelow(getMapBelowTextField().getText().trim());
     zone.setGrid(createZoneGrid());
     zone.setTokenVisionDistance(
         StringUtil.parseInteger(
@@ -330,6 +334,14 @@ public class MapPropertiesDialog extends JDialog {
 
   public JTextField getPlayerAliasTextField() {
     return formPanel.getTextField("playerMapAlias");
+  }
+
+  public JTextField getMapAboveTextField() {
+    return formPanel.getTextField("mapAbove");
+  }
+
+  public JTextField getMapBelowTextField() {
+    return formPanel.getTextField("mapBelow");
   }
 
   private void initPlayerAliasTextField() {

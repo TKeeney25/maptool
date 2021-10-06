@@ -3469,8 +3469,8 @@ public class ZoneRenderer extends JComponent
         overlay.paintOverlay(locg, token, bounds, stateValue);
       }
 
-      StringTokenOverlay stroverlay = new StringTokenOverlay("ZoneHeight", Color.BLUE, 5,  Integer.toString(token.getHeightFromCurrentZone(zone)));
-      stroverlay.paintOverlay(locg, token, bounds);
+      StringTokenOverlay stringOverlay = new StringTokenOverlay("ZoneHeight", Color.RED, Color.WHITE, 5,  Integer.toString(token.getHeightFromCurrentZone(zone)));
+      stringOverlay.paintOverlay(locg, token, bounds);
 
       timer.stop("tokenlist-9");
 
